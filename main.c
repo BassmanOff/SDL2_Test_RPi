@@ -1,43 +1,122 @@
-//
-//  main.c
-//  SDL1
-//
-//  Created by BassmanOff on 20.08.2020.
-//
-
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
-int main(int argc, const char * argv[]) {
-	SDL_Window* window = NULL;
-	
-	SDL_Surface* screenSurface = NULL;
-	
+SDL_Window *gWindow = NULL;
+SDL_Surface *gScreenSurface = NULL;
+SDL_Surface *imgSurf = NULL;
+SDL_Surface *imgSurf2 = NULL;
+SDL_Surface *imgSurf3 = NULL;
+SDL_Event e;
+_Bool playProgram = 1;
+
+
+// Инициализация SDL и открытие окна
+_Bool initWindow(void)
+{
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{return 1;}
+	gWindow = SDL_CreateWindow("SDL2 program 4",
+	SDL_WINDOWPOS_CENTERED,
+	SDL_WINDOWPOS_CENTERED,
+	800, 600,
+	SDL_WINDOW_SHOWN);
+
+	if (gWindow)
 	{
-		printf("INIT ERROR\n");
-		printf("Err code: %s\n", SDL_GetError());
+		gScreenSurface = SDL_GetWindowSurface(gWindow);
+	}
+	else {return 1;}
+
+	printf("INIT_OK\n");
+	return 0;
+}
+
+_Bool initImg1(void)
+{
+	imgSurf = SDL_LoadBMP("mn1.bmp");
+	imgSurf2 = SDL_LoadBMP("mn2.bmp");
+	imgSurf3 = SDL_LoadBMP("mn3.bmp");
+	printf("INIT_FARME_OK\n");
+	return 0;
+}
+
+void closesdl(void)
+{
+	SDL_DestroyWindow(gWindow);
+	gWindow = 0;
+	SDL_FreeSurface(imgSurf);
+	imgSurf = 0;
+	SDL_FreeSurface(imgSurf2);
+	imgSurf2 = 0;
+	SDL_FreeSurface(imgSurf3);
+	imgSurf3 = 0;
+	SDL_Quit();
+}
+
+
+int main(void)
+{
+
+
+	// Инициализация SDL
+	if (initWindow())
+	{
+		printf("INIT_ERROR\n");
 		return 1;
 	}
-	else {printf("VIDEO_INIT_OK!\n"); }
-	
-	window = SDL_CreateWindow("TESTWINDOW",
-							  SDL_WINDOWPOS_CENTERED,
-							  SDL_WINDOWPOS_CENTERED,
-							  800,
-							  600,
-							  SDL_WINDOW_SHOWN);
-	if (window)
+
+
+
+	initImg1();
+
+	while (playProgram)
 	{
-		printf("WINDOW_INIT_OK!\n");
+		while (SDL_PollEvent(&e) != 0)
+		{
+			if (e.type == SDL_QUIT)
+			{
+				printf("EXIT\n");
+				playProgram = 0;
+			}
+			else if (e.type == SDL_KEYDOWN)
+			{
+				switch (e.key.keysym.sym)
+				{
+					case SDLK_1:
+					SDL_BlitSurface(imgSurf, 0, gScreenSurface, 0);
+					SDL_UpdateWindowSurface(gWindow);
+					printf("1\n");
+					break;
+
+					case SDLK_2:
+					SDL_BlitSurface(imgSurf2, 0, gScreenSurface, 0);
+					SDL_UpdateWindowSurface(gWindow);
+					printf("2\n");
+					break;
+
+					case SDLK_3:
+					SDL_BlitSurface(imgSurf3, 0, gScreenSurface, 0);
+					SDL_UpdateWindowSurface(gWindow);
+					printf("3\n");
+					break;
+
+					case SDLK_q:
+					playProgram = 0;
+					break;
+
+					case SDLK_ESCAPE:
+					playProgram = 0;
+					break;
+
+					default:
+					printf("KEY PRESSED\n");
+				}
+			}
+		}
+		SDL_Delay(1);
 	}
-	else {return 2;}
-	screenSurface = SDL_GetWindowSurface(window);
-	SDL_FillRect(screenSurface, 0, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
-	SDL_UpdateWindowSurface(window);
-	
-	SDL_Delay(5000);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+
+
+	closesdl();
 	return 0;
 }
